@@ -31,14 +31,19 @@ func NewMessage(msgReq domain.MessageChatRequest, fromID domain.ID) error {
 	if err != nil {
 		return err
 	}
-	toDelivery := domain.MessageChatDelivery{
-		Message: msg,
-		Type:    msgReq.Type,
-		ChID:    msgReq.ChID,
+
+	delivery := domain.Delivery{
+		Type: domain.DeliveryTypeNewMsg,
+		Data: domain.MessageChatDelivery{
+			Message: msg,
+			Type:    msgReq.Type,
+			ChID:    msgReq.ChID,
+		},
 	}
+
 	for _, userID := range users {
 		if userID != fromID {
-			pools.Users.Send(userID, toDelivery)
+			pools.Users.Send(userID, delivery)
 		}
 	}
 	return nil
