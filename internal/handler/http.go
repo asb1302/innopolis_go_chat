@@ -1,6 +1,8 @@
-package main
+package handler
 
 import (
+	"chat/internal/domain"
+	"chat/pkg/authclient"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
@@ -30,12 +32,21 @@ func HandleHTTPReq(resp http.ResponseWriter, req *http.Request) {
 	}()
 
 	token := req.Header.Get(HeaderAuthorization)
-	if len(token) == 0 {
+
+	if token == "" {
 		resp.WriteHeader(http.StatusUnauthorized)
+		log.Println("Get request", req.Method, token, "error", http.StatusUnauthorized)
 		return
 	}
 
-	userID := "service.GetUserIDByToken(token)"
+	userID, valid := authclient.ValidateToken(token)
+	if !valid {
+		resp.WriteHeader(http.StatusUnauthorized)
+		log.Println("Get request", req.Method, token, "error", http.StatusUnauthorized)
+		return
+	}
+
+	log.Println("userID", userID)
 
 	// обновление соединения до WebSocket
 	conn, err := upgrader.Upgrade(resp, req, nil)
@@ -44,5 +55,5 @@ func HandleHTTPReq(resp http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		return
 	}
-	HandleWsConn(conn, userID)
+	HandleWsConn(conn, domain.ID(userID))
 }
