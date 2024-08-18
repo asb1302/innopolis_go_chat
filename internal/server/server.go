@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 )
@@ -10,6 +11,7 @@ import (
 var server *http.Server
 
 func Run(host, port string, handler http.Handler) error {
+	log.Printf("Starting server on %s:%s", host, port)
 
 	server = &http.Server{
 		Addr:              fmt.Sprintf("%s:%s", host, port),

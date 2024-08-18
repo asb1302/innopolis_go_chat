@@ -1,21 +1,21 @@
 package pools
 
 import (
-	"chat/internal/domain"
+	"github.com/asb1302/innopolis_go_chat/pkg/chatdata"
 	"sync"
 )
 
 var Users = userPool{
-	pool: make(map[domain.ID]chan interface{}),
+	pool: make(map[chatdata.ID]chan interface{}),
 }
 
 type userPool struct {
 	sync.Mutex
 	// key - user id
-	pool map[domain.ID]chan interface{}
+	pool map[chatdata.ID]chan interface{}
 }
 
-func (p *userPool) Send(uid domain.ID, msg interface{}) {
+func (p *userPool) Send(uid chatdata.ID, msg interface{}) {
 	p.Lock()
 	defer p.Unlock()
 	ch, ok := p.pool[uid]
@@ -26,7 +26,7 @@ func (p *userPool) Send(uid domain.ID, msg interface{}) {
 	ch <- msg
 }
 
-func (p *userPool) New(uid domain.ID) <-chan interface{} {
+func (p *userPool) New(uid chatdata.ID) <-chan interface{} {
 	p.Lock()
 	ch := make(chan interface{})
 	p.pool[uid] = ch
@@ -35,7 +35,7 @@ func (p *userPool) New(uid domain.ID) <-chan interface{} {
 	return ch
 }
 
-func (p *userPool) Delete(uid domain.ID) bool {
+func (p *userPool) Delete(uid chatdata.ID) bool {
 	p.Lock()
 	defer p.Unlock()
 	ch, ok := p.pool[uid]
