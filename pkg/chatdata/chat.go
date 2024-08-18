@@ -1,4 +1,4 @@
-package domain
+package chatdata
 
 import (
 	"encoding/json"

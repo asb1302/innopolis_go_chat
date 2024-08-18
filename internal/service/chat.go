@@ -1,9 +1,9 @@
 package service
 
 import (
-	"chat/internal/domain"
-	"chat/internal/repository/chatdb"
-	"chat/internal/service/pools"
+	"github.com/asb1302/innopolis_go_chat/internal/repository/chatdb"
+	"github.com/asb1302/innopolis_go_chat/internal/service/pools"
+	"github.com/asb1302/innopolis_go_chat/pkg/chatdata"
 	"github.com/google/uuid"
 	"time"
 )
@@ -14,10 +14,10 @@ func Init(chatDB chatdb.DB) {
 	chats = chatDB
 }
 
-func NewMessage(msgReq domain.MessageChatRequest, fromID domain.ID) error {
+func NewMessage(msgReq chatdata.MessageChatRequest, fromID chatdata.ID) error {
 
-	msg := domain.Message{
-		MsgID:  domain.ID(uuid.New().String()),
+	msg := chatdata.Message{
+		MsgID:  chatdata.ID(uuid.New().String()),
 		Body:   msgReq.Msg,
 		TDate:  time.Now(),
 		FromID: fromID,
@@ -32,9 +32,9 @@ func NewMessage(msgReq domain.MessageChatRequest, fromID domain.ID) error {
 		return err
 	}
 
-	delivery := domain.Delivery{
-		Type: domain.DeliveryTypeNewMsg,
-		Data: domain.MessageChatDelivery{
+	delivery := chatdata.Delivery{
+		Type: chatdata.DeliveryTypeNewMsg,
+		Data: chatdata.MessageChatDelivery{
 			Message: msg,
 			Type:    msgReq.Type,
 			ChID:    msgReq.ChID,
@@ -49,6 +49,6 @@ func NewMessage(msgReq domain.MessageChatRequest, fromID domain.ID) error {
 	return nil
 }
 
-func NewChat(uids []domain.ID) domain.ID {
+func NewChat(uids []chatdata.ID) chatdata.ID {
 	return chats.AddChat(uids)
 }

@@ -1,22 +1,22 @@
 package handler
 
 import (
-	"chat/internal/domain"
-	"chat/internal/service"
-	"chat/internal/service/pools"
 	"encoding/json"
+	"github.com/asb1302/innopolis_go_chat/internal/service"
+	"github.com/asb1302/innopolis_go_chat/internal/service/pools"
+	"github.com/asb1302/innopolis_go_chat/pkg/chatdata"
 	"github.com/gorilla/websocket"
 	"log"
 	"time"
 )
 
 const (
-	writeWait  = 1 * time.Second
-	pongWait   = 10 * time.Second
+	writeWait  = 2 * time.Second
+	pongWait   = 20 * time.Second
 	pingPeriod = (pongWait * 9) / 10
 )
 
-func HandleWsConn(conn *websocket.Conn, UID domain.ID) {
+func HandleWsConn(conn *websocket.Conn, UID chatdata.ID) {
 
 	defer func() {
 		// closing the user channel and ending write goroutine
@@ -77,30 +77,30 @@ func HandleWsConn(conn *websocket.Conn, UID domain.ID) {
 		log.Println("GOT from", UID, typ, string(message))
 		switch typ {
 		case websocket.TextMessage, websocket.BinaryMessage:
-			var req domain.Request
+			var req chatdata.Request
 			if err = json.Unmarshal(message, &req); err != nil {
 				sendErrorResp(UID, err)
 				continue
 			}
 			switch req.Type {
-			case domain.ReqTypeNewChat:
-				var newChatReq domain.NewChatRequest
+			case chatdata.ReqTypeNewChat:
+				var newChatReq chatdata.NewChatRequest
 				if err = json.Unmarshal(req.Data, &newChatReq); err != nil {
 					sendErrorResp(UID, err)
 					continue
 				}
 				chatid := service.NewChat(append(newChatReq.UserIDs, UID))
-				sendResp(UID, domain.DeliveryTypeNewChat, chatid)
+				sendResp(UID, chatdata.DeliveryTypeNewChat, chatid)
 
-			case domain.ReqTypeNewMsg:
-				var msg domain.MessageChatRequest
+			case chatdata.ReqTypeNewMsg:
+				var msg chatdata.MessageChatRequest
 				if err = json.Unmarshal(req.Data, &msg); err != nil {
 					sendErrorResp(UID, err)
 					continue
 				}
 
 				switch msg.Type {
-				case domain.MsgTypeAdd:
+				case chatdata.MsgTypeAdd:
 					if err := service.NewMessage(msg, UID); err != nil {
 						sendErrorResp(UID, err)
 						continue
@@ -113,7 +113,7 @@ func HandleWsConn(conn *websocket.Conn, UID domain.ID) {
 	}
 }
 
-func handleWsError(err error, uid domain.ID) {
+func handleWsError(err error, uid chatdata.ID) {
 	switch {
 	case websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway):
 		log.Println("websocket session closed by client", uid)
@@ -122,13 +122,13 @@ func handleWsError(err error, uid domain.ID) {
 	}
 }
 
-func sendErrorResp(UID domain.ID, err error) {
-	sendResp(UID, domain.DeliveryTypeError, domain.ErrorResponse{Error: err.Error()})
+func sendErrorResp(UID chatdata.ID, err error) {
+	sendResp(UID, chatdata.DeliveryTypeError, chatdata.ErrorResponse{Error: err.Error()})
 }
 
-func sendResp(UID domain.ID, typ domain.DeliveryType, data interface{}) {
+func sendResp(UID chatdata.ID, typ chatdata.DeliveryType, data interface{}) {
 
-	var resp domain.Delivery
+	var resp chatdata.Delivery
 	resp.Type = typ
 	resp.Data = data
 	//log.Println("SEND to channel", UID, resp)

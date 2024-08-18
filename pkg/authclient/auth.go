@@ -20,9 +20,10 @@ type UserInfo struct {
 
 var c *fasthttp.HostClient
 
-func Init(host string) {
+func Init(host string, isTLS bool) {
 	c = &fasthttp.HostClient{
-		Addr: host,
+		Addr:  host,
+		IsTLS: isTLS,
 	}
 }
 
@@ -30,7 +31,8 @@ func ValidateToken(token string) (string, bool) {
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
-	req.SetRequestURI("http://" + c.Addr + "/get_user_info")
+
+	req.SetRequestURI(buildURI("/get_user_info"))
 	req.Header.Set(fasthttp.HeaderAuthorization, token)
 	req.Header.SetHost(c.Addr)
 	req.Header.SetMethod(fasthttp.MethodGet)
@@ -54,4 +56,12 @@ func ValidateToken(token string) (string, bool) {
 	}
 
 	return authResp.Data.ID, true
+}
+
+func buildURI(path string) string {
+	protocol := "http://"
+	if c.IsTLS {
+		protocol = "https://"
+	}
+	return protocol + c.Addr + path
 }

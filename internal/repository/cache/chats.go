@@ -1,9 +1,9 @@
 package cache
 
 import (
-	"chat/internal/domain"
 	"context"
 	"errors"
+	"github.com/asb1302/innopolis_go_chat/pkg/chatdata"
 	"github.com/google/uuid"
 	"sync"
 )
@@ -13,12 +13,12 @@ const chatDumpFileName = "chats.json"
 type ChatsPool struct {
 	sync.Mutex
 	// key - ChatId
-	pool map[domain.ID]*domain.Chat
+	pool map[chatdata.ID]*chatdata.Chat
 }
 
 func ChatCacheInit(ctx context.Context, wg *sync.WaitGroup) (*ChatsPool, error) {
 	var chats = ChatsPool{
-		pool: make(map[domain.ID]*domain.Chat),
+		pool: make(map[chatdata.ID]*chatdata.Chat),
 	}
 	wg.Add(1)
 	go func() {
@@ -34,9 +34,9 @@ func ChatCacheInit(ctx context.Context, wg *sync.WaitGroup) (*ChatsPool, error) 
 	return &chats, nil
 }
 
-func (p *ChatsPool) AddChat(uids []domain.ID) domain.ID {
-	chid := domain.ID(uuid.New().String())
-	nc := domain.Chat{
+func (p *ChatsPool) AddChat(uids []chatdata.ID) chatdata.ID {
+	chid := chatdata.ID(uuid.New().String())
+	nc := chatdata.Chat{
 		UIDs: uids,
 		ChID: chid,
 	}
@@ -48,7 +48,7 @@ func (p *ChatsPool) AddChat(uids []domain.ID) domain.ID {
 	return chid
 }
 
-func (p *ChatsPool) AddMessage(chatID domain.ID, message domain.Message) error {
+func (p *ChatsPool) AddMessage(chatID chatdata.ID, message chatdata.Message) error {
 	p.Lock()
 	defer p.Unlock()
 
@@ -61,7 +61,7 @@ func (p *ChatsPool) AddMessage(chatID domain.ID, message domain.Message) error {
 	return nil
 }
 
-func (p *ChatsPool) DeleteMessage(chatID domain.ID, messageID domain.ID) error {
+func (p *ChatsPool) DeleteMessage(chatID chatdata.ID, messageID chatdata.ID) error {
 	p.Lock()
 	defer p.Unlock()
 
@@ -81,7 +81,7 @@ func (p *ChatsPool) DeleteMessage(chatID domain.ID, messageID domain.ID) error {
 	return nil
 }
 
-func (p *ChatsPool) UpdateMessage(chatID domain.ID, message domain.Message) error {
+func (p *ChatsPool) UpdateMessage(chatID chatdata.ID, message chatdata.Message) error {
 	p.Lock()
 	defer p.Unlock()
 
@@ -102,7 +102,7 @@ func (p *ChatsPool) UpdateMessage(chatID domain.ID, message domain.Message) erro
 	return nil
 }
 
-func (p *ChatsPool) GetChatUsers(chatID domain.ID) ([]domain.ID, error) {
+func (p *ChatsPool) GetChatUsers(chatID chatdata.ID) ([]chatdata.ID, error) {
 	p.Lock()
 	defer p.Unlock()
 
