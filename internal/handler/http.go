@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"chat/internal/domain"
-	"chat/pkg/authclient"
+	"github.com/asb1302/innopolis_go_chat/pkg/authclient"
+	"github.com/asb1302/innopolis_go_chat/pkg/chatdata"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
@@ -55,5 +55,5 @@ func HandleHTTPReq(resp http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		return
 	}
-	HandleWsConn(conn, domain.ID(userID))
+	HandleWsConn(conn, chatdata.ID(userID))
 }
